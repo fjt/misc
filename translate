@@ -1,0 +1,27 @@
+#!/usr/bin/ruby
+class String
+  def translate(arg={})
+    require "uri"
+    require "open-uri"
+    require "nokogiri"
+    src=(arg[:src] or "ja")
+    dst=(arg[:dst] or "en")
+    interwiki="interwiki-#{dst}"
+    xpath='//li[@class="interlanguage-link ' + interwiki + '"]'
+    str=URI::encode(self)
+    begin
+      doc=Nokogiri::HTML(open("https://#{src}.wikipedia.org/wiki/#{str}"))
+    rescue OpenURI::HTTPError
+      return nil
+    end
+    begin
+      URI::decode(doc.xpath(xpath).children.first.attributes["href"].value.gsub("//#{dst}.wikipedia.org/wiki/", "")).gsub('_', ' ')
+    rescue NoMethodError
+      return nil
+    end
+  end
+end
+
+string, src, dst = ARGV
+
+print string.translate(src:src, dst:dst), "\n"
