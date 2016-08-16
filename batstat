@@ -1,0 +1,37 @@
+#! /bin/bash
+# status of power supply is reported according to the condition of
+# battery charge and the AC power line.
+
+# apm=`cat /proc/apm`
+# flag=`echo $apm | awk '{print $4}'`
+# charge=`echo $apm | awk '{print $7}'`
+# if [ $flag = 0x00 ]
+# then
+# 	echo "
+# 		Battery $charge left	DC Internal
+#    	"
+# else
+# 	echo "
+# 		Battery $charge charged	AC On Line
+# 		"
+# fi
+
+#smapidir="/sys/devices/platform/smapi"
+smapidir="/sys/devices/LNXSYSTM:00/LNXSYBUS:00/PNP0C0A:00/power_supply/BAT0"
+
+
+cd $smapidir
+
+cap=`cat charge_full`
+now=`cat charge_now`
+percent=`echo "scale=1; 100*$now/$cap" | bc -l`
+
+echo -n "$percent% "
+if [ `cat status` = Discharging ]
+then
+    echo "left"
+else
+    echo "AC"
+fi
+
+
