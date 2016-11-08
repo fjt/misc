@@ -1,4 +1,16 @@
 #!/usr/bin/ruby
+class Array
+  def filter(&bl)
+     self.inject([]){|r, e| if e=bl.call(e)
+                              r.push(e)
+                            else
+                              r
+                            end}
+#    self.map(&bl).map{|e|nil if e == false}.compact
+  end
+
+end
+
 class String
   def translate(arg={})
     require "uri"
@@ -6,8 +18,10 @@ class String
     require "nokogiri"
     src=(arg[:src] or "ja")
     dst=(arg[:dst] or "en")
-    interwiki="interwiki-#{dst}"
-    xpath='//li[@class="interlanguage-link ' + interwiki + '"]'
+    interwiki="interlanguage-link interwiki-#{dst}"
+    clasregexp=Regexp.new(interwiki+".*")
+    #    xpath='//li[@class="interlanguage-link ' + interwiki + '"]'
+        xpath='//li'
     str=URI::encode(self)
     begin
       doc=Nokogiri::HTML(open("https://#{src}.wikipedia.org/wiki/#{str}"))
@@ -15,7 +29,11 @@ class String
       return nil
     end
     begin
-      URI::decode(doc.xpath(xpath).children.first.attributes["href"].value.gsub("//#{dst}.wikipedia.org/wiki/", "")).gsub('_', ' ')
+      ##      URI::decode(doc.xpath(xpath).children.first.attributes["href"].value.gsub("//#{dst}.wikipedia.org/wiki/", "")).gsub('_', ' ')
+      URI::decode(doc.xpath(xpath).to_a.filter{|e|
+                    if e.attributes["class"] and e.attributes["class"].value[clasregexp]
+                      e
+                    end}.first.children.first.attributes['href'].value.gsub("https://#{dst}.wikipedia.org/wiki/", "")).gsub('_', ' ')
     rescue NoMethodError
       return nil
     end
