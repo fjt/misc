@@ -8,3 +8,5 @@ hato[xcf|jpg] is a image data for Columbus-like bicycle frame tube guarantee mar
 translate is a arbitrary language word translation tool via wikipedia lol
 
 batstat is a dell xps-13 battery status shell command
+
+webmode.el provides functions and settings to split an element by context ,which conviniently existed in psgml-mode.
