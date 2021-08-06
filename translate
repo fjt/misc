@@ -22,20 +22,21 @@ class String
     clasregexp=Regexp.new(interwiki+".*")
     #    xpath='//li[@class="interlanguage-link ' + interwiki + '"]'
         xpath='//li'
-    str=URI::encode(self)
+    str=URI.encode_www_form_component(self)
     begin
-      doc=Nokogiri::HTML(open("https://#{src}.wikipedia.org/wiki/#{str}"))
+      doc=Nokogiri::HTML(URI.open("https://#{src}.wikipedia.org/wiki/#{str}"))
     rescue OpenURI::HTTPError
-      return nil
+      doc=Nokogiri::HTML(URI.open("https://#{src}.wiktionary.org/wiki/#{str}"))
+      return "https://#{src}.wikipedia.org/wiki/#{str}"
     end
     begin
       ##      URI::decode(doc.xpath(xpath).children.first.attributes["href"].value.gsub("//#{dst}.wikipedia.org/wiki/", "")).gsub('_', ' ')
-      URI::decode(doc.xpath(xpath).to_a.filter{|e|
+      URI.decode_www_form_component(doc.xpath(xpath).to_a.filter{|e|
                     if e.attributes["class"] and e.attributes["class"].value[clasregexp]
                       e
                     end}.first.children.first.attributes['href'].value.gsub("https://#{dst}.wikipedia.org/wiki/", "")).gsub('_', ' ')
-    rescue NoMethodError
-      return nil
+    # rescue NoMethodError
+    #   return nil
     end
   end
 end
